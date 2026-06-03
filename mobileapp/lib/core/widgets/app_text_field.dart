@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+import '../theme/text_theme.dart';
+
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
@@ -22,6 +25,13 @@ class AppTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontFamily: AppFonts.body,
+        fontFamilyFallback: AppFonts.fallbackFonts,
+        fontSize: AppTextThemes.callout,
+        letterSpacing: 0,
+      ),
       minLines: minLines,
       maxLines: maxLines,
       maxLength: maxLength,

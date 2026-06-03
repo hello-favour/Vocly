@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_spacing.dart';
-import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
+import 'package:mobileapp/core/constants/app_colors.dart';
+import 'package:mobileapp/core/theme/app_spacing.dart';
+import 'package:mobileapp/core/widgets/app_button.dart';
+import 'package:mobileapp/core/widgets/app_card.dart';
+import 'package:mobileapp/core/widgets/app_pill.dart';
+import 'package:mobileapp/core/widgets/app_screen.dart';
+import 'package:mobileapp/core/widgets/texts/app_texts.dart';
+import 'package:mobileapp/features/pronunciation/widgets/phoneme_row.dart';
 
 class PronunciationResultScreen extends StatelessWidget {
   const PronunciationResultScreen({
@@ -29,45 +32,67 @@ class PronunciationResultScreen extends StatelessWidget {
         : 'Excellent!';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pronunciation score')),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+      appBar: AppBar(title: const Text('Your result')),
+      body: AppScreen(
         children: [
-          AppCard(
-            child: Column(
-              children: [
-                Text(word, style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 16),
-                Text(
-                  '$score',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displaySmall?.copyWith(color: color),
-                ),
-                Text(message),
-              ],
+          AppTexts.largeTitle(
+            '$score',
+            context,
+            color: color,
+            center: true,
+            fontSize: 48,
+          ),
+          AppTexts.caption1(
+            'out of 100',
+            context,
+            color: AppColors.textTertiary,
+            center: true,
+          ),
+          const SizedBox(height: AppSpacings.elementSpacing),
+          Center(
+            child: AppPill(
+              label: message,
+              tone: score >= 75 ? AppPillTone.green : AppPillTone.amber,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacings.elementSpacingLarge),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Focus sounds',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+              children: [
+                AppTexts.caption1(
+                  'Phoneme breakdown',
+                  context,
+                  color: AppColors.textTertiary,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Speechace phoneme details will appear here when the API key is connected.',
+                const SizedBox(height: AppSpacings.elementSpacingLarge),
+                const PhonemeRow(
+                  label: '/ɑːr/',
+                  score: 90,
+                  color: AppColors.success,
+                ),
+                const PhonemeRow(
+                  label: '/tɪk/',
+                  score: 75,
+                  color: AppColors.warning,
+                ),
+                const PhonemeRow(
+                  label: '/jʊ.lɪt/',
+                  score: 80,
+                  color: AppColors.success,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacings.elementSpacingLarge),
           AppButton(
             label: 'Try again',
-            icon: Icons.refresh,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const SizedBox(height: AppSpacings.elementSpacing),
+          AppButton(
+            label: 'Try another word',
+            variant: AppButtonVariant.secondary,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],

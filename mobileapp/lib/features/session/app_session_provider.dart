@@ -1,70 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AppSession {
-  const AppSession({
-    required this.isSignedIn,
-    required this.onboardingComplete,
-    required this.displayName,
-    required this.skillLevel,
-    required this.goal,
-    required this.dailyGoalMinutes,
-    required this.streakCount,
-    required this.coins,
-    required this.streakFreeze,
-    required this.isPro,
-  });
+import '../auth/data/auth_repository.dart';
+import 'app_session.dart';
 
-  final bool isSignedIn;
-  final bool onboardingComplete;
-  final String displayName;
-  final String skillLevel;
-  final String goal;
-  final int dailyGoalMinutes;
-  final int streakCount;
-  final int coins;
-  final int streakFreeze;
-  final bool isPro;
-
-  AppSession copyWith({
-    bool? isSignedIn,
-    bool? onboardingComplete,
-    String? displayName,
-    String? skillLevel,
-    String? goal,
-    int? dailyGoalMinutes,
-    int? streakCount,
-    int? coins,
-    int? streakFreeze,
-    bool? isPro,
-  }) {
-    return AppSession(
-      isSignedIn: isSignedIn ?? this.isSignedIn,
-      onboardingComplete: onboardingComplete ?? this.onboardingComplete,
-      displayName: displayName ?? this.displayName,
-      skillLevel: skillLevel ?? this.skillLevel,
-      goal: goal ?? this.goal,
-      dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
-      streakCount: streakCount ?? this.streakCount,
-      coins: coins ?? this.coins,
-      streakFreeze: streakFreeze ?? this.streakFreeze,
-      isPro: isPro ?? this.isPro,
-    );
-  }
-
-  static const empty = AppSession(
-    isSignedIn: false,
-    onboardingComplete: false,
-    displayName: '',
-    skillLevel: 'intermediate',
-    goal: 'professional',
-    dailyGoalMinutes: 10,
-    streakCount: 0,
-    coins: 0,
-    streakFreeze: 0,
-    isPro: false,
-  );
-}
+export 'app_session.dart';
 
 final appSessionProvider =
     AsyncNotifierProvider<AppSessionNotifier, AppSession>(
@@ -81,6 +23,9 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
 
   @override
   Future<AppSession> build() async {
+    final remoteSession = await AuthRepository().currentSession();
+    if (remoteSession != null) return remoteSession;
+
     final prefs = await SharedPreferences.getInstance();
     return AppSession.empty.copyWith(
       isSignedIn: prefs.getBool(_signedInKey) ?? false,
@@ -92,7 +37,24 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
     );
   }
 
-  Future<void> signIn({String name = ''}) async {
+  Future<void> signIn({
+    String name = '',
+    String email = '',
+    String password = '',
+  }) async {
+    final authRepository = AuthRepository();
+    if (authRepository.isConfigured &&
+        email.isNotEmpty &&
+        password.isNotEmpty) {
+      state = const AsyncLoading();
+      final session = await authRepository.signInWithEmail(
+        email: email,
+        password: password,
+      );
+      state = AsyncData(session);
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_signedInKey, true);
     state = AsyncData(
@@ -103,7 +65,42 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
     );
   }
 
+  Future<void> signUp({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    final authRepository = AuthRepository();
+    if (authRepository.isConfigured) {
+      state = const AsyncLoading();
+      final session = await authRepository.signUpWithEmail(
+        name: name,
+        email: email,
+        password: password,
+      );
+      state = AsyncData(session);
+      return;
+    }
+
+    await signIn(name: name);
+  }
+
+  Future<void> signInWithGoogle() async {
+    final authRepository = AuthRepository();
+    if (!authRepository.isConfigured) {
+      await signIn(name: 'Paul');
+      return;
+    }
+
+    await authRepository.signInWithGoogle();
+    final remoteSession = await authRepository.currentSession();
+    if (remoteSession != null) {
+      state = AsyncData(remoteSession);
+    }
+  }
+
   Future<void> signOut() async {
+    await AuthRepository().signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_signedInKey, false);
     state = AsyncData(
@@ -117,6 +114,19 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
     required String goal,
     required int dailyGoalMinutes,
   }) async {
+    final authRepository = AuthRepository();
+    if (authRepository.isConfigured) {
+      state = const AsyncLoading();
+      final session = await authRepository.completeOnboarding(
+        displayName: displayName,
+        skillLevel: skillLevel,
+        goal: goal,
+        dailyGoalMinutes: dailyGoalMinutes,
+      );
+      state = AsyncData(session);
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_onboardingKey, true);
     await prefs.setString(_nameKey, displayName);
@@ -138,6 +148,7 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
   }
 
   void markActivity({int coins = 0}) {
+    unawaited(AuthRepository().markActivity(coins: coins));
     final current = state.value ?? AppSession.empty;
     state = AsyncData(
       current.copyWith(

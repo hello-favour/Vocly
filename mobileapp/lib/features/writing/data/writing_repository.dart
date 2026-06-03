@@ -1,38 +1,32 @@
 import 'package:dio/dio.dart';
 
-import '../../../config/env.dart';
-import '../../../config/supabase_config.dart';
+import '../../../core/exceptions/app_exceptions.dart';
+import '../../../core/network/api_client.dart';
 import '../models/feedback_result.dart';
 import '../models/writing_issue.dart';
 
 class WritingRepository {
-  WritingRepository(this._dio);
+  WritingRepository([ApiClient? apiClient])
+    : _apiClient = apiClient ?? ApiClient();
 
-  final Dio _dio;
+  final ApiClient _apiClient;
 
   Future<FeedbackResult> checkWriting(String text) async {
-    final client = SupabaseConfig.maybeClient;
-    final session = client?.auth.currentSession;
-
-    if (client != null && session != null) {
-      final response = await _dio.post<Map<String, dynamic>>(
-        '${Env.supabaseUrl}/functions/v1/check-writing',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer ${session.accessToken}',
-            'Content-Type': 'application/json',
-          },
-        ),
-        data: {'text': text},
-      );
-      final result = FeedbackResult.fromJson(response.data!, original: text);
-      await client.from('ai_feedback_history').insert({
-        'user_id': session.user.id,
-        'original_text': text,
-        'feedback_json': result.toJson(),
-      });
-      await client.rpc('update_streak', params: {'p_user_id': session.user.id});
-      return result;
+    if (_apiClient.isConfigured) {
+      try {
+        final response = await _apiClient.postJson(
+          '/check-writing',
+          data: {'text': text},
+        );
+        return FeedbackResult.fromJson(response, original: text);
+      } on DioException catch (error) {
+        final data = error.response?.data;
+        final code = data is Map ? data['error'] : null;
+        if (error.response?.statusCode == 429 || code == 'FREE_LIMIT_REACHED') {
+          throw const FreeLimitReachedException('writing');
+        }
+        throw NetworkException(error.message ?? 'Writing check failed.');
+      }
     }
 
     return FeedbackResult(

@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../core/constants/app_spacing.dart';
-import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_loader.dart';
-import '../providers/lessons_provider.dart';
+import 'package:mobileapp/core/constants/app_colors.dart';
+import 'package:mobileapp/core/constants/app_routes.dart';
+import 'package:mobileapp/core/theme/app_spacing.dart';
+import 'package:mobileapp/core/widgets/app_button.dart';
+import 'package:mobileapp/core/widgets/app_card.dart';
+import 'package:mobileapp/core/widgets/app_loader.dart';
+import 'package:mobileapp/core/widgets/app_pill.dart';
+import 'package:mobileapp/core/widgets/app_screen.dart';
+import 'package:mobileapp/core/widgets/app_stat_card.dart';
+import 'package:mobileapp/core/widgets/page_dots.dart';
+import 'package:mobileapp/core/widgets/section_label.dart';
+import 'package:mobileapp/core/widgets/texts/app_texts.dart';
+import 'package:mobileapp/features/lessons/providers/lessons_provider.dart';
 
 class LessonsScreen extends ConsumerWidget {
   const LessonsScreen({super.key});
@@ -17,50 +24,95 @@ class LessonsScreen extends ConsumerWidget {
 
     return lessons.when(
       loading: () => const AppLoader(),
-      error: (error, stackTrace) =>
-          Center(child: Text('Could not load lessons: $error')),
-      data: (items) => ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        children: [
-          Text(
-            'Today’s lesson',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'One word, one phrase, one grammar move. Ten focused minutes.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          for (final lesson in items)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      lesson.title,
-                      style: Theme.of(context).textTheme.titleLarge,
+      error: (error, stackTrace) => Center(
+        child: AppTexts.body('Could not load lessons: $error', context),
+      ),
+      data: (items) {
+        final lesson = items.first;
+        return AppScreen(
+          children: [
+            AppCard(
+              color: AppColors.primaryWith(0.18),
+              padding: const EdgeInsets.all(AppSpacings.cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const AppPill(label: 'Word of the day'),
+                      const Spacer(),
+                      AppTexts.caption1(
+                        '1 / 4',
+                        context,
+                        color: AppColors.textTertiary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacings.elementSpacingLarge),
+                  AppTexts.title1(lesson.word, context),
+                  const SizedBox(height: AppSpacings.elementSpacing),
+                  AppTexts.body(
+                    lesson.wordDefinition,
+                    context,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacings.elementSpacing),
+                  AppTexts.body(
+                    '"${lesson.wordExample}"',
+                    context,
+                    color: AppColors.primaryLight,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  const SizedBox(height: AppSpacings.elementSpacingLarge),
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLightWith(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.primaryLightWith(0.35),
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Word: ${lesson.word}',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: AppColors.primaryLight,
+                      size: 30,
                     ),
-                    Text(lesson.wordDefinition),
-                    const SizedBox(height: 16),
-                    AppButton(
-                      label: 'Open lesson',
-                      icon: Icons.arrow_forward,
-                      onPressed: () => context.push('/lessons/${lesson.id}'),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-        ],
-      ),
+            const SizedBox(height: AppSpacings.elementSpacing),
+            const PageDots(current: 0, total: 4),
+            const SectionLabel('Today’s summary'),
+            const Row(
+              children: [
+                Expanded(
+                  child: AppStatCard(value: '1', label: 'Lessons'),
+                ),
+                SizedBox(width: AppSpacings.elementSpacing),
+                Expanded(
+                  child: AppStatCard(value: '3', label: 'AI checks'),
+                ),
+                SizedBox(width: AppSpacings.elementSpacing),
+                Expanded(
+                  child: AppStatCard(
+                    value: '74',
+                    label: 'Avg score',
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacings.elementSpacingLarge),
+            AppButton(
+              label: 'Open today’s lesson',
+              onPressed: () => context.push(AppRoutes.lesson(lesson.id)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

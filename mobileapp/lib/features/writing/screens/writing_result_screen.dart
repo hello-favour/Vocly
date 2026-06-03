@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_spacing.dart';
-import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
-import '../models/feedback_result.dart';
+import 'package:mobileapp/core/constants/app_colors.dart';
+import 'package:mobileapp/core/theme/app_spacing.dart';
+import 'package:mobileapp/core/widgets/app_button.dart';
+import 'package:mobileapp/core/widgets/app_card.dart';
+import 'package:mobileapp/core/widgets/app_pill.dart';
+import 'package:mobileapp/core/widgets/app_screen.dart';
+import 'package:mobileapp/core/widgets/section_label.dart';
+import 'package:mobileapp/core/widgets/texts/app_texts.dart';
+import 'package:mobileapp/features/writing/models/feedback_result.dart';
+import 'package:mobileapp/features/writing/widgets/issue_row.dart';
 
 class WritingResultScreen extends StatelessWidget {
   const WritingResultScreen({super.key, required this.result});
@@ -14,87 +18,100 @@ class WritingResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Writing feedback')),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+      appBar: AppBar(title: const Text('Your feedback')),
+      body: AppScreen(
         children: [
-          AppCard(color: const Color(0xFFF0F2F0), child: Text(result.original)),
-          const SizedBox(height: 12),
-          AppCard(
-            color: const Color(0xFFEAF7EF),
-            child: Text(
-              result.corrected,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: AppColors.success),
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: _Metric(label: 'Score', value: '${result.overallScore}'),
+              Column(
+                children: [
+                  AppTexts.title2(
+                    '${result.overallScore}',
+                    context,
+                    center: true,
+                  ),
+                  AppTexts.caption1(
+                    'Clarity score',
+                    context,
+                    color: AppColors.textTertiary,
+                    center: true,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _Metric(label: 'Tone', value: result.tone),
+              Container(
+                width: 1,
+                height: 44,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AppSpacings.elementSpacingLarge,
+                ),
+                color: AppColors.whiteWith(0.1),
               ),
+              AppPill(label: '${result.tone} tone'),
             ],
           ),
-          const SizedBox(height: 16),
-          for (final issue in result.issues)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Chip(label: Text(issue.type)),
-                    Text(
-                      issue.original,
-                      style: const TextStyle(
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      issue.suggestion,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(issue.explanation),
-                  ],
-                ),
+          const SizedBox(height: AppSpacings.elementSpacingLarge),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacings.cardPadding),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.1),
+              borderRadius: AppSpacings.cardBorderRadius,
+              border: Border.all(
+                color: AppColors.success.withValues(alpha: 0.25),
               ),
             ),
-          AppCard(
-            child: Text('${result.summary}\n\nTip: ${result.confidenceTip}'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppTexts.caption1(
+                  'Suggested version',
+                  context,
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: AppSpacings.elementSpacingSmall),
+                AppTexts.body(
+                  '"${result.corrected}"',
+                  context,
+                  color: AppColors.success,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
+          SectionLabel('Issues found (${result.issues.length})'),
+          for (final issue in result.issues)
+            IssueRow(
+              badge: issue.type,
+              text:
+                  '"${issue.original}" → "${issue.suggestion}" — ${issue.explanation}',
+            ),
+          const SizedBox(height: AppSpacings.elementSpacing),
+          AppCard(
+            color: AppColors.primaryWith(0.12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppTexts.caption1(
+                  'Confidence tip',
+                  context,
+                  color: AppColors.primaryLight,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: AppSpacings.elementSpacingSmall),
+                AppTexts.body(
+                  result.confidenceTip,
+                  context,
+                  color: AppColors.primaryLight,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacings.elementSpacingLarge),
           AppButton(
             label: 'Check another',
-            icon: Icons.refresh,
             onPressed: () => Navigator.of(context).pop(),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        children: [
-          Text(value, style: Theme.of(context).textTheme.headlineMedium),
-          Text(label),
         ],
       ),
     );

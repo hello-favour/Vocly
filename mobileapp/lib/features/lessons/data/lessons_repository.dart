@@ -1,37 +1,36 @@
-import '../../../config/supabase_config.dart';
+import '../../../core/network/api_client.dart';
 import '../models/lesson.dart';
 
 class LessonsRepository {
+  LessonsRepository({ApiClient? apiClient})
+    : _apiClient = apiClient ?? ApiClient();
+
+  final ApiClient _apiClient;
+
   Future<List<Lesson>> todaysLessons(String level) async {
-    final client = SupabaseConfig.maybeClient;
-    if (client == null) {
+    if (!_apiClient.isConfigured) {
       return _demoLessons.where((lesson) => lesson.level == level).toList();
     }
 
-    final rows = await client
-        .from('lessons')
-        .select()
-        .eq('level', level)
-        .order('published_at', ascending: false)
-        .limit(3);
-    return (rows as List)
+    final payload = await _apiClient.getJson(
+      '/get-lessons',
+      queryParameters: {'level': level},
+    );
+    final rows = payload['lessons'] as List<dynamic>? ?? const [];
+    return rows
         .map((row) => Lesson.fromJson(row as Map<String, dynamic>))
         .toList();
   }
 
   Future<void> completeLesson(String lessonId) async {
-    final client = SupabaseConfig.maybeClient;
-    final user = client?.auth.currentUser;
-    if (client == null || user == null) {
+    if (!_apiClient.isConfigured || !_apiClient.hasAuthToken) {
       return;
     }
 
-    await client.from('user_lesson_progress').upsert({
-      'user_id': user.id,
-      'lesson_id': lessonId,
-    });
-    await client.rpc('update_streak', params: {'p_user_id': user.id});
-    await client.from('profiles').update({'coins': 10}).eq('id', user.id);
+    await _apiClient.postJson(
+      '/complete-lesson',
+      data: {'lesson_id': lessonId},
+    );
   }
 }
 

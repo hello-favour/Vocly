@@ -1,40 +1,102 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { handleCors } from "../_shared/cors.ts";
+import { error, errorFromUnknown, json } from "../_shared/http.ts";
+import { createAdminClient, requireUserId, updateStreak } from "../_shared/supabase.ts";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+type CheckWritingBody = {
+  text?: string;
+};
+
+type FeedbackResult = {
+  corrected: string;
+  tone: "formal" | "informal" | "neutral";
+  issues: Array<{
+    type: "grammar" | "clarity" | "word_choice" | "tone";
+    original: string;
+    suggestion: string;
+    explanation: string;
+  }>;
+  overall_score: number;
+  confidence_tip: string;
+  summary: string;
+};
+
 const SYSTEM_PROMPT = `You are a professional English communication coach helping non-native speakers improve.
-Return only valid JSON with corrected, tone, issues, overall_score, confidence_tip, and summary.
-Maximum 3 issues. Keep explanations simple.`;
+Analyse the sentence provided and return ONLY a valid JSON object with this exact structure:
+{
+  "corrected": "the improved sentence",
+  "tone": "formal OR informal OR neutral",
+  "issues": [
+    {
+      "type": "grammar OR clarity OR word_choice OR tone",
+      "original": "the problematic fragment from the original",
+      "suggestion": "better alternative",
+      "explanation": "brief, plain-English reason (1 sentence)"
+    }
+  ],
+  "overall_score": <integer 0-100>,
+  "confidence_tip": "one short tip to sound more confident or clear",
+  "summary": "one sentence summary of the feedback"
+}
+Rules:
+- Return ONLY the JSON object. No markdown, no code fences, no preamble.
+- Maximum 3 issues. Focus on the most impactful ones.
+- Keep explanations simple.`;
 
 serve(async (req) => {
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
-  if (!req.headers.get("Authorization")) return new Response("Unauthorized", { status: 401 });
+  const cors = handleCors(req);
+  if (cors) return cors;
 
-  const body = await req.json().catch(() => null) as { text?: string } | null;
-  const text = body?.text?.trim();
-  if (!text || text.length < 5) {
-    return new Response(JSON.stringify({ error: "Text too short" }), { status: 400 });
-  }
+  if (req.method !== "POST") return error("Method not allowed", 405);
 
-  const geminiResponse = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: SYSTEM_PROMPT }, { text: `Analyse this sentence: "${text}"` }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
-    }),
-  });
-
-  if (!geminiResponse.ok) {
-    return new Response(JSON.stringify({ error: "Gemini error", detail: await geminiResponse.text() }), { status: 502 });
-  }
-
-  const data = await geminiResponse.json();
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   try {
-    return new Response(JSON.stringify(JSON.parse(rawText)), { headers: { "Content-Type": "application/json" } });
-  } catch {
-    return new Response(JSON.stringify({ error: "Failed to parse Gemini response", raw: rawText }), { status: 500 });
+    const body = await req.json().catch(() => null) as CheckWritingBody | null;
+    const text = body?.text?.trim();
+    if (!text || text.length < 5) return error("Text too short", 400);
+
+    const supabase = createAdminClient();
+    const userId = await requireUserId(req, supabase);
+
+    const geminiResponse = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: SYSTEM_PROMPT },
+              { text: `Analyse this sentence: "${text}"` },
+            ],
+          },
+        ],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
+      }),
+    });
+
+    if (!geminiResponse.ok) {
+      return error("Gemini error", 502, await geminiResponse.text());
+    }
+
+    const data = await geminiResponse.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    const feedback = JSON.parse(rawText) as FeedbackResult;
+
+    const { error: insertError } = await supabase
+      .from("ai_feedback_history")
+      .insert({
+        user_id: userId,
+        original_text: text,
+        feedback_json: feedback,
+      });
+
+    if (insertError) throw insertError;
+
+    await updateStreak(supabase, userId);
+    return json(feedback);
+  } catch (cause) {
+    return errorFromUnknown(cause, "Failed to check writing");
   }
 });

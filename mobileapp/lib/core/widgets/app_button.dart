@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../constants/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../widgets/texts/app_texts.dart';
 
 enum AppButtonVariant { primary, secondary, ghost }
 
@@ -24,31 +25,55 @@ class AppButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 8)],
-        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+        if (icon != null) ...[
+          Icon(icon, size: 20),
+          const SizedBox(width: AppSpacings.elementSpacingSmall),
+        ],
+        Flexible(
+          child: AppTexts.button(
+            label,
+            context,
+            color: variant == AppButtonVariant.primary
+                ? Colors.white
+                : AppColors.primaryLight,
+          ),
+        ),
       ],
     );
 
     final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppSpacings.buttonBorderRadius,
     );
     final style = switch (variant) {
       AppButtonVariant.primary => ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         shape: shape,
-        minimumSize: const Size.fromHeight(48),
+        elevation: 0,
+        minimumSize: const Size.fromHeight(60),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacings.controlPaddingHorizontal,
+          vertical: AppSpacings.controlPaddingVertical,
+        ),
       ),
       AppButtonVariant.secondary => OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: AppColors.primaryLight,
         shape: shape,
-        side: const BorderSide(color: AppColors.primary),
-        minimumSize: const Size.fromHeight(48),
+        side: BorderSide(color: AppColors.primaryLightWith(0.35)),
+        minimumSize: const Size.fromHeight(60),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacings.controlPaddingHorizontal,
+          vertical: AppSpacings.controlPaddingVertical,
+        ),
       ),
       AppButtonVariant.ghost => TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: AppColors.primaryLight,
         shape: shape,
-        minimumSize: const Size.fromHeight(44),
+        minimumSize: const Size.fromHeight(52),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacings.elementSpacing,
+          vertical: AppSpacings.compactControlPaddingVertical,
+        ),
       ),
     };
 

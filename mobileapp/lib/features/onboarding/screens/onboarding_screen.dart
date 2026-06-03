@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../core/constants/app_spacing.dart';
-import '../../../core/widgets/app_button.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_routes.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/texts/app_texts.dart';
 import '../../session/app_session_provider.dart';
+import '../widgets/onboarding_choice_tile.dart';
+import '../widgets/onboarding_goal_card.dart';
+import '../widgets/onboarding_step_scaffold.dart';
+import '../widgets/onboarding_summary_row.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,7 +23,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final pageController = PageController();
   final nameController = TextEditingController();
-  String level = 'intermediate';
+  int page = 0;
+  String level = 'beginner';
   String goal = 'professional';
   int minutes = 10;
 
@@ -36,62 +42,182 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: PageView(
           controller: pageController,
           physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (value) => setState(() => page = value),
           children: [
-            _StepScaffold(
-              title: 'What is your name?',
+            OnboardingStepScaffold(
+              step: 1,
+              title: 'What’s your name?',
+              subtitle: 'We’ll personalise your experience',
               onNext: _next,
-              child: AppTextField(controller: nameController, label: 'Name'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppTextField(
+                    controller: nameController,
+                    label: 'Your name',
+                    hint: 'Paul',
+                  ),
+                  const SizedBox(height: AppSpacings.iconGap),
+                  AppTexts.caption1(
+                    'This is just for personalisation. You can change it anytime in settings.',
+                    context,
+                    color: AppColors.textTertiary,
+                  ),
+                ],
+              ),
             ),
-            _ChoiceStep(
-              title: 'What is your current level?',
-              value: level,
-              choices: const {
-                'beginner': 'Beginner',
-                'intermediate': 'Intermediate',
-                'advanced': 'Advanced',
-              },
-              onChanged: (value) => setState(() => level = value),
+            OnboardingStepScaffold(
+              step: 2,
+              title: 'What’s your level?',
+              subtitle: 'Be honest — we’ll match your lessons',
               onNext: _next,
+              child: Column(
+                children: [
+                  OnboardingChoiceTile(
+                    icon: Icons.eco_outlined,
+                    title: 'Beginner',
+                    subtitle: 'I make many mistakes',
+                    selected: level == 'beginner',
+                    onTap: () => setState(() => level = 'beginner'),
+                  ),
+                  OnboardingChoiceTile(
+                    icon: Icons.local_fire_department_outlined,
+                    title: 'Intermediate',
+                    subtitle: 'I can hold a conversation',
+                    selected: level == 'intermediate',
+                    onTap: () => setState(() => level = 'intermediate'),
+                  ),
+                  OnboardingChoiceTile(
+                    icon: Icons.rocket_launch_outlined,
+                    title: 'Advanced',
+                    subtitle: 'I want to sound more polished',
+                    selected: level == 'advanced',
+                    onTap: () => setState(() => level = 'advanced'),
+                  ),
+                ],
+              ),
             ),
-            _ChoiceStep(
-              title: 'What is your main goal?',
-              value: goal,
-              choices: const {
-                'professional': 'Professional',
-                'academic': 'Academic',
-                'social': 'Social',
-                'travel': 'Travel',
-              },
-              onChanged: (value) => setState(() => goal = value),
+            OnboardingStepScaffold(
+              step: 3,
+              title: 'What’s your main goal?',
+              subtitle: 'Choose what matters most to you',
               onNext: _next,
+              child: GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: 0.98,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  OnboardingGoalCard(
+                    icon: Icons.work_outline,
+                    label: 'Professional',
+                    selected: goal == 'professional',
+                    onTap: () => setState(() => goal = 'professional'),
+                  ),
+                  OnboardingGoalCard(
+                    icon: Icons.school_outlined,
+                    label: 'Academic',
+                    selected: goal == 'academic',
+                    onTap: () => setState(() => goal = 'academic'),
+                  ),
+                  OnboardingGoalCard(
+                    icon: Icons.groups_outlined,
+                    label: 'Social life',
+                    selected: goal == 'social',
+                    onTap: () => setState(() => goal = 'social'),
+                  ),
+                  OnboardingGoalCard(
+                    icon: Icons.flight_takeoff,
+                    label: 'Travel',
+                    selected: goal == 'travel',
+                    onTap: () => setState(() => goal = 'travel'),
+                  ),
+                ],
+              ),
             ),
-            _ChoiceStep(
-              title: 'How many minutes can you practice daily?',
-              value: '$minutes',
-              choices: const {'5': '5 min', '10': '10 min', '15': '15 min'},
-              onChanged: (value) => setState(() => minutes = int.parse(value)),
+            OnboardingStepScaffold(
+              step: 4,
+              title: 'Daily practice time?',
+              subtitle: 'Pick what fits your schedule',
               onNext: _next,
+              child: Column(
+                children: [
+                  OnboardingChoiceTile(
+                    icon: Icons.schedule,
+                    title: '5 minutes',
+                    subtitle: 'Quick daily habit',
+                    selected: minutes == 5,
+                    onTap: () => setState(() => minutes = 5),
+                  ),
+                  OnboardingChoiceTile(
+                    icon: Icons.star_border,
+                    title: '10 minutes',
+                    subtitle: 'Recommended for most',
+                    selected: minutes == 10,
+                    onTap: () => setState(() => minutes = 10),
+                  ),
+                  OnboardingChoiceTile(
+                    icon: Icons.bolt_outlined,
+                    title: '15 minutes',
+                    subtitle: 'Serious improvement',
+                    selected: minutes == 15,
+                    onTap: () => setState(() => minutes = 15),
+                  ),
+                ],
+              ),
             ),
-            _StepScaffold(
-              title: 'Your daily coach is ready',
-              buttonLabel: 'Start today’s lesson',
+            OnboardingStepScaffold(
+              step: 5,
+              title: 'You’re all set!',
+              subtitle: 'Your personalised English journey starts now',
+              buttonLabel: 'Start learning',
               onNext: () async {
                 await ref
                     .read(appSessionProvider.notifier)
                     .completeOnboarding(
                       displayName: nameController.text.trim().isEmpty
-                          ? 'Friend'
+                          ? 'Paul'
                           : nameController.text.trim(),
                       skillLevel: level,
                       goal: goal,
                       dailyGoalMinutes: minutes,
                     );
-                if (context.mounted) context.go('/home/lessons');
+                if (context.mounted) context.go(AppRoutes.lessonsTab);
               },
-              child: const Icon(
-                Icons.workspace_premium,
-                size: 88,
-                color: Colors.amber,
+              child: Column(
+                children: [
+                  Container(
+                    width: 92,
+                    height: 92,
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.success.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: AppColors.success,
+                      size: 46,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacings.sectionSpacing),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        OnboardingSummaryRow(label: 'Level', value: level),
+                        OnboardingSummaryRow(label: 'Goal', value: goal),
+                        OnboardingSummaryRow(
+                          label: 'Daily target',
+                          value: '$minutes min',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -104,86 +230,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     pageController.nextPage(
       duration: const Duration(milliseconds: 240),
       curve: Curves.easeOut,
-    );
-  }
-}
-
-class _StepScaffold extends StatelessWidget {
-  const _StepScaffold({
-    required this.title,
-    required this.child,
-    required this.onNext,
-    this.buttonLabel = 'Continue',
-  });
-
-  final String title;
-  final Widget child;
-  final VoidCallback onNext;
-  final String buttonLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        const SizedBox(height: 48),
-        Text(title, style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 24),
-        AppCard(child: child),
-        const SizedBox(height: 24),
-        AppButton(
-          label: buttonLabel,
-          icon: Icons.arrow_forward,
-          onPressed: onNext,
-        ),
-      ],
-    );
-  }
-}
-
-class _ChoiceStep extends StatelessWidget {
-  const _ChoiceStep({
-    required this.title,
-    required this.value,
-    required this.choices,
-    required this.onChanged,
-    required this.onNext,
-  });
-
-  final String title;
-  final String value;
-  final Map<String, String> choices;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onNext;
-
-  @override
-  Widget build(BuildContext context) {
-    return _StepScaffold(
-      title: title,
-      onNext: onNext,
-      child: Column(
-        children: choices.entries.map((entry) {
-          final selected = entry.key == value;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              tileColor: selected
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                  : null,
-              leading: Icon(
-                selected
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-              ),
-              title: Text(entry.value),
-              onTap: () => onChanged(entry.key),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 }
