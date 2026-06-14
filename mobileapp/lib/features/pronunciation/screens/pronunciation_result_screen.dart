@@ -6,7 +6,6 @@ import 'package:mobileapp/core/widgets/app_card.dart';
 import 'package:mobileapp/core/widgets/app_pill.dart';
 import 'package:mobileapp/core/widgets/app_screen.dart';
 import 'package:mobileapp/core/widgets/texts/app_texts.dart';
-import 'package:mobileapp/features/pronunciation/widgets/phoneme_row.dart';
 
 class PronunciationResultScreen extends StatelessWidget {
   const PronunciationResultScreen({
@@ -26,13 +25,13 @@ class PronunciationResultScreen extends StatelessWidget {
         ? AppColors.warning
         : AppColors.success;
     final message = score < 50
-        ? 'Keep practising!'
+        ? 'Try it once more'
         : score < 75
-        ? 'Getting there!'
-        : 'Excellent!';
+        ? 'You’re getting closer'
+        : 'That sounded confident';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Your result')),
+      appBar: AppBar(title: const Text('Speaking result')),
       body: AppScreen(
         children: [
           AppTexts.largeTitle(
@@ -40,10 +39,10 @@ class PronunciationResultScreen extends StatelessWidget {
             context,
             color: color,
             center: true,
-            fontSize: 48,
+            fontSize: 56,
           ),
           AppTexts.caption1(
-            'out of 100',
+            'pronunciation score',
             context,
             color: AppColors.textTertiary,
             center: true,
@@ -57,42 +56,38 @@ class PronunciationResultScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacings.elementSpacingLarge),
           AppCard(
+            color: AppColors.primaryWith(0.06),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppTexts.caption1(
-                  'Phoneme breakdown',
+                  'PHRASE PRACTISED',
                   context,
-                  color: AppColors.textTertiary,
+                  color: AppColors.primaryLight,
+                  fontWeight: FontWeight.w700,
+                  center: true,
                 ),
-                const SizedBox(height: AppSpacings.elementSpacingLarge),
-                const PhonemeRow(
-                  label: '/ɑːr/',
-                  score: 90,
-                  color: AppColors.success,
-                ),
-                const PhonemeRow(
-                  label: '/tɪk/',
-                  score: 75,
-                  color: AppColors.warning,
-                ),
-                const PhonemeRow(
-                  label: '/jʊ.lɪt/',
-                  score: 80,
-                  color: AppColors.success,
+                const SizedBox(height: AppSpacings.elementSpacing),
+                AppTexts.title2(
+                  '“$word”',
+                  context,
+                  color: AppColors.primary,
+                  center: true,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacings.elementSpacingLarge),
+          AppTexts.body(
+            score >= 75
+                ? 'Good work. Repeat it once more to make the phrase feel natural.'
+                : 'Slow down, keep the words connected, and try the phrase again.',
+            context,
+            color: AppColors.textSecondary,
+            center: true,
+          ),
+          const SizedBox(height: AppSpacings.sectionSpacing),
           AppButton(
             label: 'Try again',
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const SizedBox(height: AppSpacings.elementSpacing),
-          AppButton(
-            label: 'Try another word',
-            variant: AppButtonVariant.secondary,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],

@@ -14,6 +14,16 @@ serve(async (req) => {
   try {
     const supabase = createAdminClient();
     const userId = await requireUserId(req, supabase);
+    const [{ data: profile, error: profileError }, { data: count, error: countError }] =
+      await Promise.all([
+        supabase.from("profiles").select("is_pro").eq("id", userId).single(),
+        supabase.rpc("count_today_pronunciation", { p_user_id: userId }),
+      ]);
+    if (profileError) throw profileError;
+    if (countError) throw countError;
+    if (!profile?.is_pro && Number(count ?? 0) >= 3) {
+      return error("FREE_LIMIT_REACHED", 429);
+    }
 
     const formData = await req.formData();
     const audioFile = formData.get("audio") as File | null;
@@ -48,7 +58,7 @@ serve(async (req) => {
       .insert({
         user_id: userId,
         word,
-        audio_path: `edge-function/${crypto.randomUUID()}.m4a`,
+        audio_path: null,
         score_overall: scoreOverall,
         score_json: result,
       });

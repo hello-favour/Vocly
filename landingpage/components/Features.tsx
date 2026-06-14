@@ -22,10 +22,10 @@ export default function Features() {
       <div className="relative z-10 mx-auto max-w-5xl">
         <div className="mb-16 text-center">
           <span className="mb-4 block text-sm font-medium uppercase tracking-widest text-brand-light">
-            Features
+            The MVP
           </span>
           <h2 className="mx-auto max-w-2xl font-heading text-4xl font-semibold leading-tight text-ink md:text-5xl">
-            Everything you need to communicate with confidence
+            One focused app. One clear outcome.
           </h2>
         </div>
 

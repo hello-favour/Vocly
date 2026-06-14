@@ -16,7 +16,7 @@ export default function Pricing() {
           </h2>
           <p className="text-ink/50">No credit card required to get started.</p>
         </div>
-        <div className="grid items-start gap-6 md:grid-cols-3">
+        <div className="mx-auto grid max-w-3xl items-start gap-6 md:grid-cols-2">
           {PRICING.map((plan, i) => (
             <motion.div
               key={plan.name}

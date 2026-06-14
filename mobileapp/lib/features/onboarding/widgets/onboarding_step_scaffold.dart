@@ -15,6 +15,7 @@ class OnboardingStepScaffold extends StatelessWidget {
     required this.child,
     required this.onNext,
     this.buttonLabel = 'Continue',
+    this.totalSteps = 4,
   });
 
   final int step;
@@ -23,6 +24,7 @@ class OnboardingStepScaffold extends StatelessWidget {
   final Widget child;
   final VoidCallback onNext;
   final String buttonLabel;
+  final int totalSteps;
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +34,10 @@ class OnboardingStepScaffold extends StatelessWidget {
         vertical: 26,
       ),
       children: [
-        StepProgress(current: step, total: 5),
+        StepProgress(current: step, total: totalSteps),
         const SizedBox(height: 18),
         AppTexts.caption2(
-          'Step $step of 5',
+          'Step $step of $totalSteps',
           context,
           color: AppColors.primaryLight,
           fontWeight: FontWeight.w700,

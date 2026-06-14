@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { APP_NAME, APP_STORE_URL } from '@/lib/content'
+import { APP_NAME, WAITLIST_URL } from '@/lib/content'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -49,10 +49,10 @@ export default function Navbar() {
         </div>
 
         <a
-          href={APP_STORE_URL}
+          href={WAITLIST_URL}
           className="rounded-xl bg-brand px-5 py-2 text-sm font-medium text-white transition-all hover:bg-brand/90"
         >
-          Download app
+          Join early access
         </a>
       </div>
     </nav>

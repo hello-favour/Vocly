@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import '../../../core/exceptions/app_exceptions.dart';
 import '../../../core/network/api_client.dart';
 import '../models/feedback_result.dart';
-import '../models/writing_issue.dart';
 
 class WritingRepository {
   WritingRepository([ApiClient? apiClient])
@@ -29,36 +28,8 @@ class WritingRepository {
       }
     }
 
-    return FeedbackResult(
-      original: text,
-      corrected: _polishDemoText(text),
-      tone: text.contains('kindly') ? 'formal' : 'neutral',
-      overallScore: text.length > 80 ? 84 : 72,
-      confidenceTip: 'Lead with the action you want the reader to take.',
-      summary:
-          'Clear foundation. A few word-choice changes make it sound more professional.',
-      issues: const [
-        WritingIssue(
-          type: 'clarity',
-          original: 'long opening',
-          suggestion: 'state the request first',
-          explanation:
-              'Professional writing is easier to act on when the main request appears early.',
-        ),
-        WritingIssue(
-          type: 'tone',
-          original: 'too casual',
-          suggestion: 'use a direct but polite phrase',
-          explanation:
-              'A balanced tone sounds confident without sounding rude.',
-        ),
-      ],
+    throw const NetworkException(
+      'Vocly is not connected to the writing service.',
     );
-  }
-
-  String _polishDemoText(String text) {
-    final trimmed = text.trim();
-    if (trimmed.endsWith('.')) return trimmed;
-    return '$trimmed.';
   }
 }

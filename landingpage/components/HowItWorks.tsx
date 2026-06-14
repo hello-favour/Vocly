@@ -12,7 +12,7 @@ export default function HowItWorks() {
             How it works
           </span>
           <h2 className="font-heading text-4xl font-semibold leading-tight text-ink md:text-5xl">
-            3 minutes a day. Real results.
+            Learn it. Understand it. Say it.
           </h2>
         </div>
 

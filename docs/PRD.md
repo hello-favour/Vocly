@@ -1,204 +1,120 @@
-# Vocly Product Requirements Document
+# Vocly Product Requirements
 
-## 1. Product Summary
+**Current product direction:** Vocly PRD v2.0, “Speak Like a Pro”.
 
-Vocly is a daily English communication coach for non-native English speakers who want to sound clearer, more confident, and more professional in real-world situations.
+This document supersedes the former lesson-centric product definition. Vocly is
+not a beginner vocabulary or grammar app. It is a communication upgrade system
+for people who already speak English and want to sound more natural, confident,
+and professional.
 
-The product combines short daily lessons, AI writing feedback, pronunciation scoring, streaks, progress tracking, and a subscription upgrade path.
+## Product Promise
 
-## 2. Product Goal
+Vocly transforms basic or textbook English into language a confident,
+well-spoken professional would naturally use in real situations.
 
-Help users improve their practical English communication in 10 minutes a day.
+## Target User
 
-The main user outcome is confidence: users should feel more prepared to write emails, speak in meetings, pronounce words correctly, and communicate without overthinking every sentence.
+- English-speaking professionals and graduates, initially focused on African
+  markets.
+- People who use English already but freeze, sound overly basic, or struggle
+  with tone.
+- Not complete beginners, children, or exam-preparation users.
 
-## 3. Target Audience
+## Communication Domains
 
-- Non-native English speakers.
-- Age range: roughly 20-35.
-- Africa-first market focus.
-- Professionals, students, founders, remote workers, and job seekers.
-- Users who already know some English but struggle with clarity, confidence, tone, or pronunciation.
+- Professional
+- Social
+- Interview
+- Smart replies
+- Grammar fixes in context
 
-## 4. Core User Problems
+Onboarding must use these domains to personalize the user’s first content.
 
-- Users freeze in meetings even when they know what they want to say.
-- Users reread emails repeatedly because they are unsure if the tone sounds professional.
-- Users feel less capable than they are because language blocks their confidence.
-- Generic grammar apps do not teach real communication habits.
-- Pronunciation practice is hard because users do not know whether they said words correctly.
+## Core Features
 
-## 5. Product Positioning
+### Daily Upgrade Cards
 
-Vocly is not a generic language game and not only a grammar checker.
+Each card contains four pages:
 
-Vocly is a daily coach for practical communication:
+1. Basic phrase → professional or natural phrase.
+2. Two realistic dialogue examples.
+3. When to use it, when not to use it, and its register.
+4. Spoken or written practice.
 
-- Learn a useful word, phrase, and grammar tip.
-- Check real writing with AI.
-- Practice pronunciation and get a score.
-- Track progress and build a streak.
+Free users receive three cards per day. Completing a card records progress,
+updates the streak, and awards 10 coins.
 
-## 6. Product Surfaces
+### Situation Coach
 
-### Mobile App
+Users select a real situation, answer by typing or speaking, and receive an AI
+rewrite, confidence feedback, explanations, and scores. Situations include job
+interviews, professional emails, manager responses, meetings, networking,
+feedback, salary conversations, social conversations, and workplace messages.
 
-The mobile app is the main product experience. It includes onboarding, lessons, writing feedback, pronunciation practice, progress, profile, coins, and paywall.
+Free users receive two sessions per day.
 
-### Server
+### AI Writing Upgrade
 
-The server layer is Supabase plus TypeScript Edge Functions. It owns database-backed operations, AI calls, pronunciation scoring, streak updates, and secure API secrets.
+The writing tool must go beyond grammar correction. It detects context, fixes
+grammar, upgrades vocabulary and tone, and returns corrected and fully upgraded
+versions with grammar, clarity, confidence, tone, and overall scores.
 
-### Landing Page
+Free users receive five checks per day.
 
-The landing page explains the value proposition and converts visitors into downloads or waitlist signups.
+### Pronunciation And Fluency
 
-## 7. Main Features
+Users practise words and full upgraded phrases. Results cover pronunciation,
+fluency, and naturalness. Free users receive three attempts per day; phrase mode
+is a Pro feature.
 
-### 7.1 Authentication
+### Basic Or Pro Quiz
 
-Users should be able to create an account and sign in.
+A daily five-question quiz tests natural phrasing, professional choices, and
+grammar in context. Free users receive one quiz per day.
 
-Supported auth:
+### Phrase Bank
 
-- Email and password.
-- Google OAuth.
+A searchable library organizes Basic → Pro phrases by workplace, meetings,
+email, interviews, social use, smart replies, grammar fixes, and advanced
+upgrades. Free users can access 20 entries; Pro unlocks the full library.
 
-### 7.2 Onboarding
+### Streaks And Coins
 
-Users provide:
+Activities award coins and maintain the daily streak. Coins can purchase a
+streak freeze or unlock selected phrase categories.
 
-- Name.
-- Skill level: beginner, intermediate, advanced.
-- Goal: professional, academic, social, travel.
-- Daily practice time.
+## Subscription
 
-Onboarding stores profile preferences and marks onboarding as complete.
+- Free: product limits listed above.
+- Monthly: $4.99.
+- Yearly: $39.99.
+- Lifetime: $59.99.
 
-### 7.3 Daily Lessons
+Pro unlocks unlimited core usage, the full phrase bank, phrase pronunciation,
+and quiz history.
 
-Users get lessons matched to their skill level.
+## Technical Direction
 
-Each lesson includes:
-
-- Word of the day.
-- Definition.
-- Example.
-- Useful phrase.
-- Phrase meaning.
-- Grammar rule.
-- Grammar example.
-
-Completing a lesson should:
-
-- Record lesson progress.
-- Award coins.
-- Update streak.
-
-### 7.4 AI Writing Check
-
-Users paste a sentence or short passage and receive:
-
-- Corrected version.
-- Tone.
-- Up to three key issues.
-- Overall score.
-- Confidence tip.
-- Summary.
-
-Free users have a daily usage limit. When the limit is reached, the user should be sent to the paywall.
-
-### 7.5 Pronunciation Practice
-
-Users practice a word or sentence by recording audio.
-
-The system should:
-
-- Upload audio securely.
-- Send audio to Speechace.
-- Return a pronunciation score.
-- Save pronunciation history.
-- Update streak.
-
-### 7.6 Progress
-
-Users should see:
-
-- Streak count.
-- Weekly activity.
-- Writing and pronunciation progress.
-- Coins.
-- Completed lessons.
-
-### 7.7 Profile and Settings
-
-Users should be able to:
-
-- View their profile.
-- See coins and streak status.
-- Access settings.
-- Sign out.
-- Restore purchases.
-
-### 7.8 Paywall and Subscription
-
-RevenueCat is the subscription source of truth.
-
-Plans:
-
-- Free.
-- Pro yearly.
-- Lifetime.
-
-Pro users should get unlimited or expanded access depending on the final entitlement rules.
-
-### 7.9 Landing Page
-
-The landing page should include:
-
-- Sticky nav.
-- Hero section with app mockup.
-- Social proof.
-- Problem section.
-- Feature section.
-- How it works.
-- Testimonials.
-- Pricing.
-- FAQ.
-- Final CTA.
-- Footer.
-
-## 8. Success Metrics
-
-Product metrics:
-
-- Account creation rate.
-- Onboarding completion rate.
-- First lesson completion rate.
-- Writing check usage.
-- Pronunciation attempt usage.
-- Day 1 and Day 7 retention.
-- Streak continuation.
-- Free-to-Pro conversion.
-
-Landing metrics:
-
-- CTA click-through rate.
-- Waitlist or download conversion.
-- Pricing section engagement.
-
-## 9. Non-Goals For Current Phase
-
-- Full social community.
-- Live tutoring.
-- Complex grammar curriculum builder.
-- Admin lesson management UI.
-- In-app chat bot beyond structured writing feedback.
-
-## 10. Open Product Decisions
-
-- Final App Store and Play Store URLs.
-- Whether landing CTA should point to waitlist before app launch.
-- Exact free usage limits per feature after launch testing.
-- Whether lessons are one per day or multiple per day for free users.
-- Final RevenueCat entitlement naming and product IDs.
+- Flutter for iOS and Android.
+- Supabase Auth, Postgres, Storage, and Edge Functions.
+- Gemini for writing and situation coaching.
+- Speechace for pronunciation.
+- RevenueCat for subscriptions.
+
+The canonical schema includes `upgrade_cards`, `user_card_progress`,
+`phrase_bank`, `situation_scenarios`, `situation_sessions`, `quiz_questions`,
+and `quiz_attempts`. The server must enforce free limits; the client must not be
+the source of truth for usage or rewards.
+
+## Build Order
+
+1. Foundation, auth, and domain-aware onboarding.
+2. Daily Upgrade Card vertical slice.
+3. Situation Coach.
+4. Writing Upgrade and pronunciation.
+5. Quiz and Phrase Bank.
+6. Progress, paywall, notifications, and analytics.
+7. Production Supabase deployment and end-to-end testing.
+
+The full source brief is `Vocly_PRD_v2.0.md` supplied by the product owner. Its
+feature definitions and product rules take precedence over older documentation.

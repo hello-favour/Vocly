@@ -1,12 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import {
-  APP_STORE_URL,
-  DESCRIPTION,
-  PLAY_STORE_URL,
-  TAGLINE,
-} from '@/lib/content'
+import { DESCRIPTION, TAGLINE, WAITLIST_URL } from '@/lib/content'
 
 export default function Hero() {
   return (
@@ -20,14 +15,14 @@ export default function Hero() {
         className="relative z-10 mb-8 inline-flex items-center gap-2 rounded-full border border-brand/25 bg-brand/15 px-4 py-2 text-sm font-medium text-brand-light"
       >
         <span className="h-2 w-2 rounded-full bg-success animate-pulse-slow" />
-        Now available on iOS & Android
+        MVP coming soon to iOS & Android
       </motion.div>
 
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="relative z-10 mb-6 max-w-3xl font-heading text-5xl font-semibold leading-[1.1] text-ink md:text-7xl"
+        className="relative z-10 mb-6 max-w-4xl font-heading text-5xl font-semibold leading-[1.1] text-ink md:text-7xl"
       >
         {TAGLINE}
       </motion.h1>
@@ -36,7 +31,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="relative z-10 mb-10 max-w-lg text-lg leading-relaxed text-ink/55 md:text-xl"
+        className="relative z-10 mb-10 max-w-2xl text-lg leading-relaxed text-ink/55 md:text-xl"
       >
         {DESCRIPTION}
       </motion.p>
@@ -45,25 +40,13 @@ export default function Hero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="relative z-10 mb-16 flex flex-col gap-3 sm:flex-row"
+        className="relative z-10 mb-16"
       >
         <a
-          href={APP_STORE_URL}
+          href={WAITLIST_URL}
           className="group flex items-center justify-center gap-3 rounded-2xl bg-brand px-7 py-4 text-base font-semibold text-white shadow-lg shadow-brand/25 transition-all hover:bg-brand/90"
         >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-          </svg>
-          Download on iOS
-        </a>
-        <a
-          href={PLAY_STORE_URL}
-          className="flex items-center justify-center gap-3 rounded-2xl border border-border bg-card-selected px-7 py-4 text-base font-semibold text-ink transition-all hover:border-border hover:bg-card-selected"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.6.37.6 1.23 0 1.6l-14 8.5c-.66.5-1.6.03-1.6-.8z" />
-          </svg>
-          Get it on Android
+          Join early access
         </a>
       </motion.div>
 
@@ -79,34 +62,56 @@ export default function Hero() {
               <span className="text-[9px] text-white/65">9:41</span>
               <span className="text-[9px] text-white/65">●●●</span>
             </div>
-            <div className="flex h-full flex-col items-center gap-3 px-4 pb-16 pt-12">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand/40 bg-brand/30">
-                <span className="text-xl text-brand">V</span>
-              </div>
-              <span className="font-heading text-base font-semibold text-ink">
-                Vocly
-              </span>
-              <div className="w-full rounded-xl border border-border bg-card-selected p-3 text-left">
-                <div className="mb-1 text-[9px] text-brand-light">
-                  Word of the day
+            <div className="flex h-full flex-col gap-3 px-4 pb-16 pt-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[9px] text-ink/40">TODAY’S UPGRADE</div>
+                  <div className="font-heading text-base font-semibold text-ink">
+                    Speak like a pro
+                  </div>
                 </div>
-                <div className="font-heading text-lg text-ink">Articulate</div>
-                <div className="mt-1 text-[9px] text-ink/40">
-                  Express ideas clearly and effectively
+                <div className="rounded-full bg-warning/15 px-2 py-1 text-[9px] text-warning">
+                  1 day
                 </div>
               </div>
-              <div className="grid w-full grid-cols-2 gap-2">
-                <div className="rounded-xl border border-success/20 bg-success/10 p-3 text-left">
-                  <div className="text-[9px] text-success">Writing</div>
-                  <div className="mt-1 text-sm font-semibold text-ink">86</div>
+              <div className="w-full rounded-xl border border-border bg-card p-4 text-left shadow-sm">
+                <div className="mb-3 text-[9px] font-semibold uppercase tracking-wider text-brand-light">
+                  Basic → Professional
                 </div>
-                <div className="rounded-xl border border-warning/20 bg-warning/10 p-3 text-left">
-                  <div className="text-[9px] text-warning">Speech</div>
-                  <div className="mt-1 text-sm font-semibold text-ink">92</div>
+                <div className="text-[9px] font-semibold text-ink/35">BASIC</div>
+                <div className="mt-1 font-heading text-base text-ink/45">
+                  I’m very busy.
+                </div>
+                <div className="py-3 text-sm text-warning">↓</div>
+                <div className="text-[9px] font-semibold text-brand-light">
+                  SAY THIS
+                </div>
+                <div className="mt-1 font-heading text-xl font-semibold text-brand">
+                  I’m swamped.
                 </div>
               </div>
-              <div className="h-1 w-full overflow-hidden rounded-full bg-brand/20">
-                <div className="h-full w-3/4 rounded-full bg-brand" />
+              <div className="w-full rounded-xl border border-border bg-card p-3">
+                <div className="mb-2 text-[9px] text-ink/40">
+                  PRACTISE SPEAKING
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-sm text-white">
+                    ●
+                  </div>
+                  <div className="text-left">
+                    <div className="text-[10px] font-medium text-ink">
+                      Say “I’m swamped”
+                    </div>
+                    <div className="text-[9px] text-ink/35">
+                      Tap to record your voice
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-auto flex w-full justify-around border-t border-border pt-3 text-[9px] text-ink/35">
+                <span className="font-semibold text-brand">Home</span>
+                <span>Speak</span>
+                <span>Profile</span>
               </div>
             </div>
           </div>

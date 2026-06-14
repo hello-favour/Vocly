@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../config/env.dart';
+import '../../core/exceptions/app_exceptions.dart';
 import '../auth/data/auth_repository.dart';
 import 'app_session.dart';
 
@@ -14,82 +16,86 @@ final appSessionProvider =
     );
 
 class AppSessionNotifier extends AsyncNotifier<AppSession> {
-  static const _signedInKey = 'signed_in';
-  static const _onboardingKey = 'onboarding_complete';
-  static const _nameKey = 'display_name';
-  static const _levelKey = 'skill_level';
-  static const _goalKey = 'goal';
-  static const _minutesKey = 'daily_goal_minutes';
-
   @override
   Future<AppSession> build() async {
+    if (Env.hasSupabase) {
+      final subscription = Supabase.instance.client.auth.onAuthStateChange
+          .listen((event) async {
+            if (event.event == AuthChangeEvent.signedOut) {
+              state = const AsyncData(AppSession.empty);
+              return;
+            }
+            if (event.session != null) {
+              final session = await AuthRepository().currentSession();
+              if (session != null) state = AsyncData(session);
+            }
+          });
+      ref.onDispose(subscription.cancel);
+    }
+
     final remoteSession = await AuthRepository().currentSession();
     if (remoteSession != null) return remoteSession;
-
-    final prefs = await SharedPreferences.getInstance();
-    return AppSession.empty.copyWith(
-      isSignedIn: prefs.getBool(_signedInKey) ?? false,
-      onboardingComplete: prefs.getBool(_onboardingKey) ?? false,
-      displayName: prefs.getString(_nameKey) ?? '',
-      skillLevel: prefs.getString(_levelKey) ?? 'intermediate',
-      goal: prefs.getString(_goalKey) ?? 'professional',
-      dailyGoalMinutes: prefs.getInt(_minutesKey) ?? 10,
-    );
+    return AppSession.empty;
   }
 
-  Future<void> signIn({
-    String name = '',
-    String email = '',
-    String password = '',
-  }) async {
+  Future<void> signIn({String email = '', String password = ''}) async {
     final authRepository = AuthRepository();
-    if (authRepository.isConfigured &&
-        email.isNotEmpty &&
-        password.isNotEmpty) {
-      state = const AsyncLoading();
+    if (!authRepository.isConfigured) {
+      throw const SupabaseException(
+        'Supabase is not configured. Add the project URL and publishable key.',
+      );
+    }
+    final previous = state.value ?? AppSession.empty;
+    state = const AsyncLoading();
+    try {
       final session = await authRepository.signInWithEmail(
         email: email,
         password: password,
       );
       state = AsyncData(session);
-      return;
+    } catch (error, stackTrace) {
+      state = AsyncData(previous);
+      Error.throwWithStackTrace(error, stackTrace);
     }
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_signedInKey, true);
-    state = AsyncData(
-      (state.value ?? AppSession.empty).copyWith(
-        isSignedIn: true,
-        displayName: name,
-      ),
-    );
   }
 
-  Future<void> signUp({
+  Future<bool> signUp({
     required String name,
     required String email,
     required String password,
   }) async {
     final authRepository = AuthRepository();
-    if (authRepository.isConfigured) {
-      state = const AsyncLoading();
+    if (!authRepository.isConfigured) {
+      throw const SupabaseException(
+        'Supabase is not configured. Add the project URL and publishable key.',
+      );
+    }
+    final previous = state.value ?? AppSession.empty;
+    state = const AsyncLoading();
+    try {
       final session = await authRepository.signUpWithEmail(
         name: name,
         email: email,
         password: password,
       );
+      if (session == null) {
+        state = AsyncData(previous);
+        return false;
+      }
       state = AsyncData(session);
-      return;
+      return true;
+    } catch (error, stackTrace) {
+      state = AsyncData(previous);
+      Error.throwWithStackTrace(error, stackTrace);
     }
-
-    await signIn(name: name);
   }
 
   Future<void> signInWithGoogle() async {
     final authRepository = AuthRepository();
     if (!authRepository.isConfigured) {
-      await signIn(name: 'Paul');
-      return;
+      throw const SupabaseException(
+        'Supabase is not configured. Add the project URL and publishable key.',
+      );
     }
 
     await authRepository.signInWithGoogle();
@@ -101,11 +107,7 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
 
   Future<void> signOut() async {
     await AuthRepository().signOut();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_signedInKey, false);
-    state = AsyncData(
-      (state.value ?? AppSession.empty).copyWith(isSignedIn: false),
-    );
+    state = const AsyncData(AppSession.empty);
   }
 
   Future<void> completeOnboarding({
@@ -115,40 +117,31 @@ class AppSessionNotifier extends AsyncNotifier<AppSession> {
     required int dailyGoalMinutes,
   }) async {
     final authRepository = AuthRepository();
-    if (authRepository.isConfigured) {
-      state = const AsyncLoading();
-      final session = await authRepository.completeOnboarding(
-        displayName: displayName,
-        skillLevel: skillLevel,
-        goal: goal,
-        dailyGoalMinutes: dailyGoalMinutes,
+    if (!authRepository.isConfigured) {
+      throw const SupabaseException(
+        'Supabase is not configured. Add the project URL and publishable key.',
       );
-      state = AsyncData(session);
-      return;
     }
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_onboardingKey, true);
-    await prefs.setString(_nameKey, displayName);
-    await prefs.setString(_levelKey, skillLevel);
-    await prefs.setString(_goalKey, goal);
-    await prefs.setInt(_minutesKey, dailyGoalMinutes);
-    state = AsyncData(
-      (state.value ?? AppSession.empty).copyWith(
-        isSignedIn: true,
-        onboardingComplete: true,
-        displayName: displayName,
-        skillLevel: skillLevel,
-        goal: goal,
-        dailyGoalMinutes: dailyGoalMinutes,
-        streakCount: 1,
-        coins: 10,
-      ),
+    state = const AsyncLoading();
+    final session = await authRepository.completeOnboarding(
+      displayName: displayName,
+      skillLevel: skillLevel,
+      goal: goal,
+      dailyGoalMinutes: dailyGoalMinutes,
     );
+    state = AsyncData(session);
   }
 
   void markActivity({int coins = 0}) {
-    unawaited(AuthRepository().markActivity(coins: coins));
+    unawaited(AuthRepository().markActivity());
+    _applyActivityLocally(coins: coins);
+  }
+
+  void applyServerActivity({int coins = 0}) {
+    _applyActivityLocally(coins: coins);
+  }
+
+  void _applyActivityLocally({required int coins}) {
     final current = state.value ?? AppSession.empty;
     state = AsyncData(
       current.copyWith(

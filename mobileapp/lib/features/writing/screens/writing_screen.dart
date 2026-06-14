@@ -44,7 +44,7 @@ class _WritingScreenState extends ConsumerState<WritingScreen> {
         Row(
           children: [
             AppTexts.headline(
-              'AI Writing Check',
+              'AI Writing Upgrade',
               context,
               fontWeight: FontWeight.w700,
             ),
@@ -75,7 +75,7 @@ class _WritingScreenState extends ConsumerState<WritingScreen> {
             onPressed: controller.clear,
           ),
         ),
-        const SectionLabel('What do you want feedback on?'),
+        const SectionLabel('What should Vocly improve?'),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -102,7 +102,7 @@ class _WritingScreenState extends ConsumerState<WritingScreen> {
         ),
         const SizedBox(height: AppSpacings.elementSpacingLarge),
         AppButton(
-          label: checkState.isLoading ? 'Checking...' : 'Check my writing',
+          label: checkState.isLoading ? 'Upgrading...' : 'Upgrade my writing',
           onPressed: checkState.isLoading
               ? null
               : () async {

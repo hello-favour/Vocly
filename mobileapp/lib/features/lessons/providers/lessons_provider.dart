@@ -1,19 +1,35 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../session/app_session_provider.dart';
-import '../data/lessons_repository.dart';
-import '../models/lesson.dart';
+import '../data/upgrade_cards_repository.dart';
+import '../models/upgrade_card.dart';
 
-final lessonsRepositoryProvider = Provider((ref) => LessonsRepository());
+final upgradeCardsRepositoryProvider = Provider(
+  (ref) => UpgradeCardsRepository(),
+);
 
-final todaysLessonsProvider = FutureProvider<List<Lesson>>((ref) {
-  final level =
-      ref.watch(appSessionProvider).valueOrNull?.skillLevel ?? 'intermediate';
-  return ref.watch(lessonsRepositoryProvider).todaysLessons(level);
+final todaysUpgradeCardsProvider = FutureProvider<List<UpgradeCard>>((ref) {
+  final session = ref.watch(appSessionProvider).valueOrNull ?? AppSession.empty;
+  return ref
+      .watch(upgradeCardsRepositoryProvider)
+      .todaysCards(
+        level: session.skillLevel,
+        domain: _domainForGoal(session.goal),
+      );
 });
 
-final lessonByIdProvider = Provider.family<Lesson?, String>((ref, id) {
-  final lessons =
-      ref.watch(todaysLessonsProvider).valueOrNull ?? const <Lesson>[];
-  return lessons.where((lesson) => lesson.id == id).firstOrNull;
+final upgradeCardByIdProvider = Provider.family<UpgradeCard?, String>((
+  ref,
+  id,
+) {
+  final cards =
+      ref.watch(todaysUpgradeCardsProvider).valueOrNull ??
+      const <UpgradeCard>[];
+  return cards.where((card) => card.id == id).firstOrNull;
 });
+
+String _domainForGoal(String goal) => switch (goal) {
+  'social' => 'social',
+  'interview' => 'interview',
+  _ => 'professional',
+};

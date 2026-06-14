@@ -1,4 +1,4 @@
-import { APP_STORE_URL, PLAY_STORE_URL } from '@/lib/content'
+import { WAITLIST_URL } from '@/lib/content'
 
 export default function FinalCTA() {
   return (
@@ -6,28 +6,22 @@ export default function FinalCTA() {
       <div className="absolute inset-0 bg-glow-radial opacity-60" />
       <div className="relative z-10 mx-auto max-w-3xl text-center">
         <h2 className="mb-6 font-heading text-4xl font-semibold leading-tight text-ink md:text-6xl">
-          Your next conversation starts today.
+          Sound more confident in your next conversation.
         </h2>
         <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-ink/55">
-          10 minutes a day. No fluff. No games. Just real communication skills
-          that compound every single day.
+          Learn one stronger phrase, understand where it fits, and practise
+          saying it aloud.
         </p>
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <a
-            href={APP_STORE_URL}
+            href={WAITLIST_URL}
             className="rounded-2xl bg-brand px-8 py-4 text-base font-semibold text-white shadow-xl shadow-brand/25 transition-all hover:bg-brand/90"
           >
-            Download on iOS
-          </a>
-          <a
-            href={PLAY_STORE_URL}
-            className="rounded-2xl border border-border bg-card-selected px-8 py-4 text-base font-semibold text-ink transition-all hover:bg-card-selected"
-          >
-            Get it on Android
+            Join early access
           </a>
         </div>
         <p className="mt-6 text-sm text-ink/25">
-          Free to download. No credit card required.
+          Coming soon to iOS and Android.
         </p>
       </div>
     </section>

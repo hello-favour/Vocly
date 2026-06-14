@@ -6,6 +6,17 @@ This document explains what has been done so far and what remains, split by mobi
 
 Path: `mobileapp/`
 
+### MVP Scope
+
+The visible app is intentionally limited to three tabs:
+
+- Home: daily Basic → Pro upgrade cards.
+- Speak: practise and score today’s upgraded phrase.
+- Profile: focus, streak, plan, upgrade, and sign out.
+
+Writing and Progress are not part of the current MVP navigation. They can be
+reintroduced after the core speaking loop is validated.
+
 ### Done
 
 - Flutter app structure exists.
@@ -13,7 +24,7 @@ Path: `mobileapp/`
   - Auth.
   - Onboarding.
   - Home shell.
-  - Lessons.
+  - Daily Upgrades.
   - Writing.
   - Pronunciation.
   - Progress.
@@ -54,19 +65,37 @@ Path: `mobileapp/`
 - API client adds Supabase auth headers for Edge Function calls.
 - Writing repository can call `/check-writing`.
 - Writing flow handles free limit and routes to paywall.
-- Lessons repository can call `/get-lessons` and `/complete-lesson`.
-- Demo lessons still exist for local mode.
+- Daily Upgrade repository calls `/get-upgrade-cards` and
+  `/complete-upgrade-card`.
+- The home flow now implements all four card pages: upgrade, context, usage,
+  and practice.
+- Demo upgrade cards keep local mode usable.
+- Upgrade free-limit responses route to the paywall.
+- Onboarding goals now match the v2 communication domains.
+- Onboarding is a focused four-step flow ending with a real Basic → Pro lesson
+  preview.
+- Splash is a logo-only transition into account creation.
+- Home presents the Daily Upgrade as a speaking lesson with context, usage, and
+  speaking practice.
+- RevenueCat offerings, package selection, purchase, and restore flows are
+  implemented.
+- Authenticated Supabase users are identified to RevenueCat.
+- `revenuecat-webhook` synchronizes the `pro` entitlement to
+  `profiles.is_pro`.
 - Analyzer passed after the integration work.
 
 ### Partially Done
 
 - Auth UI exists but still needs polished loading/error states.
-- Onboarding UI exists and can update profile through the auth repository when Supabase is configured.
-- Lessons UI exists, but schema/function compatibility still needs final verification.
+- Onboarding UI can update the profile through the auth repository when
+  Supabase is configured.
+- The internal feature folder is still named `lessons`; a later mechanical
+  rename to `upgrades` remains.
 - Writing result UI exists, but history needs full Supabase-backed data loading.
 - Pronunciation UI exists, but full audio upload and Speechace result flow needs final verification.
 - Progress UI exists, but should be connected fully to Supabase stats.
-- Paywall UI exists, but purchase flow needs RevenueCat offerings/products wired.
+- Paywall code is complete, but real App Store/Play products and RevenueCat
+  dashboard configuration are still required.
 - Notification service exists, but final schedule rules need confirmation.
 
 ### Not Done Yet
@@ -80,7 +109,8 @@ Path: `mobileapp/`
 - End-to-end auth must be tested against a real Supabase project.
 - End-to-end writing check must be tested against deployed function and Gemini secret.
 - End-to-end pronunciation scoring must be tested with audio upload and Speechace secret.
-- RevenueCat offerings and product purchase buttons need final implementation.
+- RevenueCat public SDK keys, store products, the `pro` entitlement, and a
+  current offering must be configured.
 - Error, empty, and loading states should be reviewed across all screens.
 
 ## 2. Server
@@ -93,11 +123,12 @@ Path: `server/`
 - Supabase schema file exists:
   - `server/schema.sql`
 - Edge Functions exist:
-  - `get-lessons`
-  - `complete-lesson`
+  - `get-upgrade-cards`
+  - `complete-upgrade-card`
   - `update-streak`
   - `check-writing`
   - `score-pronunciation`
+  - `revenuecat-webhook`
 - Shared function helpers exist:
   - CORS.
   - HTTP responses.
@@ -107,35 +138,33 @@ Path: `server/`
 
 ### Partially Done
 
-- Schema includes core tables:
-  - profiles.
-  - lessons.
-  - user lesson progress.
-  - AI feedback history.
-  - pronunciation history.
-  - daily usage log.
+- Schema now includes the v2 product tables:
+  - upgrade cards and card progress.
+  - phrase bank.
+  - situation scenarios and sessions.
+  - quiz questions and attempts.
+  - AI feedback, pronunciation history, and daily usage.
+- `server/seed.sql` includes ten starter upgrade cards.
 - Streak function exists.
 - Server functions need deployment to a real Supabase project before the app can work as a real product.
 
 ### Not Done Yet
 
-- Schema must be reconciled with latest PRD and app expectations.
-- `profiles.onboarding_done` should be added if missing.
-- Lesson fields should be checked against Flutter `Lesson.fromJson`.
-- Free limit helper functions should be verified or added if functions expect them.
+- Apply the new schema and seed to a real Supabase project.
 - Supabase Storage bucket `audio_recordings` must be created.
 - Storage policies for user-owned audio paths must be added.
 - Secrets must be set:
   - `SUPABASE_SERVICE_ROLE_KEY`
   - `GEMINI_API_KEY`
   - `SPEECHACE_API_KEY`
+  - `REVENUECAT_WEBHOOK_SECRET`
 - Functions must be deployed:
-  - `get-lessons`
-  - `complete-lesson`
+  - `get-upgrade-cards`
+  - `complete-upgrade-card`
   - `update-streak`
   - `check-writing`
   - `score-pronunciation`
-- Seed lessons need to be inserted into `lessons`.
+  - `revenuecat-webhook`
 - End-to-end auth/function calls need to be tested with real JWTs.
 
 ## 3. Landing Page
@@ -208,9 +237,10 @@ Without those, auth and feature calls cannot fully work, so repositories either 
 
 ## 5. Recommended Next Steps
 
-### Step 1: Fix Server Schema
+### Step 1: Build Situation Coach
 
-Update `server/schema.sql` so it matches the latest PRD and Flutter expectations.
+Implement the situation picker, practice input, AI feedback result, and
+`situation-coach` Edge Function.
 
 ### Step 2: Set Up Supabase
 
@@ -232,8 +262,8 @@ Test in this order:
 
 1. Register.
 2. Complete onboarding.
-3. Fetch lesson.
-4. Complete lesson.
+3. Fetch upgrade cards.
+4. Complete an upgrade card.
 5. Run writing check.
 6. Record pronunciation.
 7. Check progress.

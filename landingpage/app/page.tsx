@@ -7,8 +7,6 @@ import HowItWorks from '@/components/HowItWorks'
 import Navbar from '@/components/Navbar'
 import Pricing from '@/components/Pricing'
 import Problem from '@/components/Problem'
-import SocialProof from '@/components/SocialProof'
-import Testimonials from '@/components/Testimonials'
 
 export default function Home() {
   return (
@@ -16,11 +14,9 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <SocialProof />
         <Problem />
         <Features />
         <HowItWorks />
-        <Testimonials />
         <Pricing />
         <FAQ />
         <FinalCTA />

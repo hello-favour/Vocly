@@ -1,4 +1,4 @@
 class AppStrings {
-  static const appName = 'FluentAI';
-  static const tagline = 'Speak English like you mean it.';
+  static const appName = 'Vocly';
+  static const tagline = 'Stop sounding basic. Start speaking like a pro.';
 }

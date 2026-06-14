@@ -12,6 +12,13 @@ class AppTextField extends StatelessWidget {
     this.minLines = 1,
     this.maxLines = 1,
     this.maxLength,
+    this.validator,
+    this.keyboardType,
+    this.textInputAction,
+    this.obscureText = false,
+    this.autofillHints,
+    this.onFieldSubmitted,
+    this.enabled = true,
   });
 
   final TextEditingController controller;
@@ -20,11 +27,26 @@ class AppTextField extends StatelessWidget {
   final int minLines;
   final int maxLines;
   final int? maxLength;
+  final FormFieldValidator<String>? validator;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final bool obscureText;
+  final Iterable<String>? autofillHints;
+  final ValueChanged<String>? onFieldSubmitted;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      obscureText: obscureText,
+      autofillHints: autofillHints,
+      onFieldSubmitted: onFieldSubmitted,
+      enabled: enabled,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontFamily: AppFonts.body,

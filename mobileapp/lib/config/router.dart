@@ -1,43 +1,44 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../core/constants/app_routes.dart';
 import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/register_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/lessons/screens/lesson_detail_screen.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/paywall/screens/paywall_screen.dart';
-import '../features/profile/screens/coins_screen.dart';
-import '../features/profile/screens/settings_screen.dart';
 import '../features/pronunciation/screens/pronunciation_result_screen.dart';
 import '../features/session/app_session_provider.dart';
-import '../features/writing/models/feedback_result.dart';
-import '../features/writing/screens/writing_history_screen.dart';
-import '../features/writing/screens/writing_result_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final session = ref.watch(appSessionProvider).valueOrNull ?? AppSession.empty;
 
   return GoRouter(
-    initialLocation: AppRoutes.lessonsTab,
+    initialLocation: AppRoutes.authSplash,
     refreshListenable: _RouterRefresh(ref),
     redirect: (context, state) {
       final path = state.uri.path;
       final isAuthRoute = path.startsWith('/auth');
       final isOnboarding = path == AppRoutes.onboarding;
+      final isPasswordReset = path == AppRoutes.resetPassword;
 
       if (!session.isSignedIn && !isAuthRoute) {
         return AppRoutes.authSplash;
       }
-      if (session.isSignedIn && !session.onboardingComplete && !isOnboarding) {
+      if (session.isSignedIn &&
+          !session.onboardingComplete &&
+          !isOnboarding &&
+          !isPasswordReset) {
         return AppRoutes.onboarding;
       }
       if (session.isSignedIn &&
           session.onboardingComplete &&
-          (isAuthRoute || isOnboarding)) {
+          (isAuthRoute || isOnboarding) &&
+          !isPasswordReset) {
         return AppRoutes.lessonsTab;
       }
       return null;
@@ -60,35 +61,39 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '${AppRoutes.home}/:tab',
+        redirect: (context, state) {
+          const tabs = {'lessons', 'pronunciation', 'profile'};
+          final tab = state.pathParameters['tab'];
+          return tabs.contains(tab) ? null : AppRoutes.lessonsTab;
+        },
         builder: (context, state) =>
             HomeScreen(tab: state.pathParameters['tab'] ?? 'lessons'),
       ),
       GoRoute(
-        path: AppRoutes.lessonDetail,
+        path: AppRoutes.upgradeDetail,
         builder: (context, state) =>
             LessonDetailScreen(lessonId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: AppRoutes.writingResult,
-        builder: (context, state) =>
-            WritingResultScreen(result: state.extra! as FeedbackResult),
-      ),
-      GoRoute(
-        path: AppRoutes.writingHistory,
-        builder: (context, state) => const WritingHistoryScreen(),
       ),
       GoRoute(
         path: AppRoutes.pronunciationResult,
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? const {};
           return PronunciationResultScreen(
-            word: extra['word'] as String? ?? 'clarity',
-            score: extra['score'] as int? ?? 78,
+            word: extra['word'] as String? ?? 'Practice phrase',
+            score: extra['score'] as int? ?? 0,
           );
         },
       ),
@@ -96,14 +101,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.paywall,
         builder: (context, state) =>
             PaywallScreen(trigger: state.extra as String?),
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.coins,
-        builder: (context, state) => const CoinsScreen(),
       ),
     ],
   );

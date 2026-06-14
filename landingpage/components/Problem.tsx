@@ -12,13 +12,12 @@ export default function Problem() {
             The problem
           </span>
           <h2 className="mx-auto mb-6 max-w-2xl font-heading text-4xl font-semibold leading-tight text-ink md:text-5xl">
-            You know English. You just don&apos;t{' '}
-            <em className="not-italic text-brand-light">sound like it yet.</em>
+            You already speak English. Vocly helps you{' '}
+            <em className="not-italic text-brand-light">say it better.</em>
           </h2>
           <p className="mx-auto max-w-xl text-lg leading-relaxed text-ink/50">
-            1.5 billion people speak English as a second language. Most
-            struggle not with the rules - but with confidence and clarity in
-            real situations.
+            The problem is not always grammar. It is knowing what a confident,
+            natural speaker would say in the same situation.
           </p>
         </div>
 

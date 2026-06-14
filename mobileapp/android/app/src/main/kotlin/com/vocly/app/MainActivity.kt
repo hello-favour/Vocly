@@ -1,4 +1,4 @@
-package com.fluentai.fluent_ai
+package com.vocly.app
 
 import io.flutter.embedding.android.FlutterActivity
 

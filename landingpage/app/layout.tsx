@@ -3,21 +3,21 @@ import './globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vocly.app'),
-  title: 'Vocly - Speak English like you mean it',
+  title: 'Vocly - Speak Like a Pro',
   description:
-    'A daily English communication coach in your pocket. Improve your writing, pronunciation, and confidence in 10 minutes a day.',
+    'Upgrade basic English into natural, confident, professional phrases and practise saying them aloud.',
   keywords: [
-    'English learning',
-    'communication app',
+    'professional English',
+    'spoken English',
     'pronunciation',
-    'grammar',
-    'vocabulary',
+    'English phrases',
+    'speaking confidence',
     'non-native speakers',
   ],
   openGraph: {
-    title: 'Vocly - Speak English like you mean it',
+    title: 'Vocly - Speak Like a Pro',
     description:
-      'Daily lessons, AI writing feedback, and pronunciation scoring for non-native English speakers.',
+      'Turn basic English into natural, confident, professional speech.',
     url: 'https://vocly.app',
     siteName: 'Vocly',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Vocly - Speak English like you mean it',
-    description: 'Daily lessons, AI writing feedback, and pronunciation scoring.',
+    title: 'Vocly - Speak Like a Pro',
+    description: 'Upgrade your phrases and practise speaking them with confidence.',
     images: ['/og-image.png'],
   },
   icons: { icon: '/favicon.ico' },

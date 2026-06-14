@@ -143,21 +143,22 @@ If backend is not configured, demo feedback is returned.
 
 If the server returns `FREE_LIMIT_REACHED`, Flutter throws `FreeLimitReachedException` and routes to the paywall.
 
-### Lessons Flow
+### Daily Upgrade Flow
 
 Files:
 
-- `mobileapp/lib/features/lessons/data/lessons_repository.dart`
+- `mobileapp/lib/features/lessons/data/upgrade_cards_repository.dart`
 - `mobileapp/lib/features/lessons/providers/lessons_provider.dart`
 - `mobileapp/lib/features/lessons/screens/lessons_screen.dart`
 - `mobileapp/lib/features/lessons/screens/lesson_detail_screen.dart`
 
 Expected remote endpoints:
 
-- `GET /get-lessons?level=...`
-- `POST /complete-lesson`
+- `GET /get-upgrade-cards?level=...&domain=...`
+- `POST /complete-upgrade-card`
 
-If backend is not configured, demo lessons are used.
+If backend is not configured, demo upgrade cards are used. The four-page detail
+flow covers the upgrade, contextual dialogues, usage guidance, and practice.
 
 ### Pronunciation Flow
 
@@ -201,8 +202,8 @@ ink = Color(0xFF241218)
 ### Files
 
 - `server/schema.sql`
-- `server/functions/get-lessons/index.ts`
-- `server/functions/complete-lesson/index.ts`
+- `server/functions/get-upgrade-cards/index.ts`
+- `server/functions/complete-upgrade-card/index.ts`
 - `server/functions/update-streak/index.ts`
 - `server/functions/check-writing/index.ts`
 - `server/functions/score-pronunciation/index.ts`
@@ -213,24 +214,30 @@ ink = Color(0xFF241218)
 Schema includes:
 
 - `profiles`
-- `lessons`
-- `user_lesson_progress`
+- `upgrade_cards`
+- `user_card_progress`
+- `phrase_bank`
+- `situation_scenarios`
+- `situation_sessions`
+- `quiz_questions`
+- `quiz_attempts`
 - `ai_feedback_history`
 - `pronunciation_history`
 - `daily_usage_log`
 - `update_streak` RPC
 
-Important note: the app expects `profiles.onboarding_done`. If it is missing in `server/schema.sql`, the schema must be updated before production use.
+The schema includes `profiles.onboarding_done` and v2 daily-limit helper RPCs.
 
 ### Edge Functions
 
-#### `get-lessons`
+#### `get-upgrade-cards`
 
-Returns published lessons by user level.
+Returns published cards by user level and communication domain, excluding cards
+already completed today and enforcing the free daily limit.
 
-#### `complete-lesson`
+#### `complete-upgrade-card`
 
-Records lesson progress, awards coins, and updates streak.
+Records card progress idempotently, awards coins once, and updates streak.
 
 #### `update-streak`
 
@@ -255,8 +262,8 @@ supabase secrets set SPEECHACE_API_KEY=...
 ### Deploy Commands
 
 ```bash
-supabase functions deploy get-lessons
-supabase functions deploy complete-lesson
+supabase functions deploy get-upgrade-cards
+supabase functions deploy complete-upgrade-card
 supabase functions deploy update-streak
 supabase functions deploy check-writing
 supabase functions deploy score-pronunciation

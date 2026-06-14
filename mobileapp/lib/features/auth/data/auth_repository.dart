@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../../../config/env.dart';
 import '../../../core/exceptions/app_exceptions.dart';
@@ -20,6 +21,7 @@ class AuthRepository {
     final client = _client;
     final user = client?.auth.currentUser;
     if (client == null || user == null) return null;
+    await _identifyPurchaser(user.id);
     return _sessionFromProfile(client, user);
   }
 
@@ -28,41 +30,79 @@ class AuthRepository {
     required String password,
   }) async {
     final client = _requireClient();
-    final response = await client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-    final user = response.user;
-    if (user == null) {
-      throw const AuthException('Unable to sign in.');
+    try {
+      final response = await client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      final user = response.user;
+      if (user == null) {
+        throw const AuthException('Unable to sign in.');
+      }
+      await _identifyPurchaser(user.id);
+      return _sessionFromProfile(client, user);
+    } on sb.AuthException catch (error) {
+      throw AuthException(_authMessage(error));
     }
-    return _sessionFromProfile(client, user);
   }
 
-  Future<AppSession> signUpWithEmail({
+  Future<AppSession?> signUpWithEmail({
     required String name,
     required String email,
     required String password,
   }) async {
     final client = _requireClient();
-    final response = await client.auth.signUp(
-      email: email,
-      password: password,
-      data: {'full_name': name},
-    );
-    final user = response.user;
-    if (user == null) {
-      throw const AuthException('Unable to create account.');
+    try {
+      final response = await client.auth.signUp(
+        email: email,
+        password: password,
+        data: {'full_name': name},
+        emailRedirectTo: 'com.vocly.app:///auth/login',
+      );
+      final user = response.user;
+      if (user == null) {
+        throw const AuthException('Unable to create account.');
+      }
+      if (response.session == null) return null;
+      await _identifyPurchaser(user.id);
+      return _sessionFromProfile(client, user, displayName: name);
+    } on sb.AuthException catch (error) {
+      throw AuthException(_authMessage(error));
     }
-    return _sessionFromProfile(client, user, displayName: name);
   }
 
   Future<void> signInWithGoogle() async {
     final client = _requireClient();
     await client.auth.signInWithOAuth(
       sb.OAuthProvider.google,
-      redirectTo: 'com.vocly.app://login-callback',
+      redirectTo: 'com.vocly.app:///auth/login',
     );
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    final client = _requireClient();
+    try {
+      await client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'com.vocly.app:///auth/reset-password',
+      );
+    } on sb.AuthException catch (error) {
+      throw AuthException(_authMessage(error));
+    }
+  }
+
+  Future<void> updatePassword(String password) async {
+    final client = _requireClient();
+    if (client.auth.currentSession == null) {
+      throw const AuthException(
+        'This reset link is invalid or has expired. Request a new one.',
+      );
+    }
+    try {
+      await client.auth.updateUser(sb.UserAttributes(password: password));
+    } on sb.AuthException catch (error) {
+      throw AuthException(_authMessage(error));
+    }
   }
 
   Future<AppSession> completeOnboarding({
@@ -90,22 +130,51 @@ class AuthRepository {
     return _sessionFromProfile(client, user);
   }
 
-  Future<void> markActivity({int coins = 0}) async {
+  Future<void> markActivity() async {
     final client = _client;
     final user = client?.auth.currentUser;
     if (client == null || user == null) return;
     await client.rpc('update_streak', params: {'p_user_id': user.id});
-    if (coins > 0) {
-      final session = await _sessionFromProfile(client, user);
-      await client
-          .from('profiles')
-          .update({'coins': session.coins + coins})
-          .eq('id', user.id);
-    }
   }
 
   Future<void> signOut() async {
+    if (Env.hasRevenueCat) {
+      try {
+        await Purchases.logOut();
+      } catch (_) {
+        // RevenueCat can already be anonymous before the first account login.
+      }
+    }
     await _client?.auth.signOut();
+  }
+
+  Future<void> _identifyPurchaser(String userId) async {
+    if (!Env.hasRevenueCat) return;
+    try {
+      await Purchases.logIn(userId);
+    } catch (_) {
+      // Authentication should still work if store services are unavailable.
+    }
+  }
+
+  String _authMessage(sb.AuthException error) {
+    final message = error.message.toLowerCase();
+    if (message.contains('invalid login credentials')) {
+      return 'Incorrect email or password.';
+    }
+    if (message.contains('email not confirmed')) {
+      return 'Confirm your email before signing in.';
+    }
+    if (message.contains('user already registered')) {
+      return 'An account already exists for this email.';
+    }
+    if (message.contains('password')) {
+      return 'Your password does not meet the security requirements.';
+    }
+    if (message.contains('rate limit')) {
+      return 'Too many attempts. Please wait and try again.';
+    }
+    return error.message;
   }
 
   sb.SupabaseClient _requireClient() {

@@ -49,10 +49,25 @@ class ApiClient {
     return response.data ?? <String, dynamic>{};
   }
 
+  Future<Map<String, dynamic>> postFormData(
+    String path, {
+    required FormData data,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      path,
+      data: data,
+      options: Options(
+        headers: _authHeaders(),
+        contentType: 'multipart/form-data',
+      ),
+    );
+    return response.data ?? <String, dynamic>{};
+  }
+
   Map<String, String> _authHeaders() {
     final token = _currentAccessToken();
     return {
-      if (Env.supabaseAnonKey.isNotEmpty) 'apikey': Env.supabaseAnonKey,
+      if (Env.supabaseClientKey.isNotEmpty) 'apikey': Env.supabaseClientKey,
       if (token != null) 'Authorization': 'Bearer $token',
       if (token == null && Env.backendAuthToken.isNotEmpty)
         'Authorization': 'Bearer ${Env.backendAuthToken}',
